@@ -1,5 +1,9 @@
-from step01 import Variable
+
 import numpy as np
+
+class Variable:
+    def __init__(self,data):
+        self.data=data
 
 class Function:
     def __call__(self,input):

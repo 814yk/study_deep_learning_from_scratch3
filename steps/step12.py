@@ -27,16 +27,18 @@ class Variable:
                 funcs.append(x.creator)
 
 class Function:
-    def __call__(self, inputs):
+    def __call__(self, *inputs):
         xs = [x.data for x in inputs]
-        ys = self.forward(xs)
+        ys = self.forward(*xs)
+        if not isinstance(ys,tuple):
+            ys=(ys,)
         outputs = [Variable(as_array(y)) for y in ys]
         for output in outputs:
             output.set_creator(self)
 
         self.input=input
         self.outputs=outputs
-        return outputs
+        return outputs if len(outputs)>1 else outputs[0]
 
     def forward(self, x):
         raise NotImplementedError
@@ -45,10 +47,9 @@ class Function:
         raise NotImplementedError
 
 class Add(Function):
-    def forward(self,xs):
-        x0,x1=xs
+    def forward(self,x0,x1):
         y=x0+x1
-        return(y,)
+        return y
 
 class Square(Function):
     def forward(self, x):
@@ -76,6 +77,10 @@ def square(x):
 def exp(x):
     f=Exp()
     return f(x)
+
+def add(x0,x1):
+    f=Add()
+    return f(x0,x1)
 
 def as_array(x):
     if np.isscalar(x):
@@ -111,8 +116,8 @@ class SquareTest(unittest.TestCase):
         flg=np.allclose(x.grad,num_grad)
         self.assertTrue(flg)
 
-xs=[Variable(np.array(2)),Variable(np.array(3))]
-f=Add()
-ys=f(xs)
-y=ys[0]
+
+x0=Variable(np.array(2))
+x1=Variable(np.array(3))
+y=add(x0,x1)
 print(y.data)
